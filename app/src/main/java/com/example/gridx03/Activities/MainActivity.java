@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
         // calling method to get bar entries.
         getBarEntries();
 
-        // creating a new bar data set.
+        /// creating a new bar data set.
         barDataSet = new BarDataSet(barEntriesArrayList, "hourly power consuption");
 
         // creating a new bar data and
