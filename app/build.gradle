@@ -1,0 +1,100 @@
+plugins {
+    id "com.android.application"
+}
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "30.0.3"
+
+    defaultConfig {
+        applicationId "com.example.noble.pulsar"
+        minSdkVersion 24
+        targetSdkVersion 30
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    buildFeatures {
+        dataBinding true
+    }
+
+}
+
+dependencies {
+    def app_compat = "1.3.1"
+    def constraint_layout = "2.1.0"
+    def material = "1.4.0"
+    def legacy_support = "1.0.0"
+    def recyclerview = "1.2.1"
+    def activity = "1.3.1"
+    def fragment = "1.3.6"
+    def navigation = "2.3.5"
+    def lifecycle = "2.3.1"
+    def retrofitVersion = "2.9.0"
+    def glide = "4.12.0"
+    def timber = "5.0.1"
+    // testing
+    def junit = "4.13.2"
+    def junit_testing = "1.1.3"
+    def espresso = "3.4.0"
+
+
+    // UI
+    implementation "androidx.appcompat:appcompat:$app_compat"
+    implementation "androidx.constraintlayout:constraintlayout:$constraint_layout"
+    implementation "com.google.android.material:material:$material"
+    implementation "androidx.legacy:legacy-support-v4:$legacy_support"
+    implementation "androidx.recyclerview:recyclerview:$recyclerview"
+    implementation "androidx.activity:activity:$activity"
+    implementation "androidx.fragment:fragment:$fragment"
+
+    // Navigation
+    implementation "androidx.navigation:navigation-fragment:$navigation"
+    implementation "androidx.navigation:navigation-ui:$navigation"
+
+    // ViewModel and Live Data
+    implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle"
+    implementation "androidx.lifecycle:lifecycle-livedata:$lifecycle"
+    implementation "androidx.lifecycle:lifecycle-common-java8:$lifecycle"
+    implementation "androidx.lifecycle:lifecycle-process:$lifecycle"
+
+    // Retrofit
+    implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
+    implementation 'com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.2'
+
+    // Glide
+    implementation "com.github.bumptech.glide:glide:$glide"
+    annotationProcessor "com.github.bumptech.glide:compiler:$glide"
+
+    // Timber
+    implementation "com.jakewharton.timber:timber:$timber"
+
+    implementation "com.oguzdev:CircularFloatingActionMenu:1.0.2" // Floating Action Menu
+    implementation "com.jjoe64:graphview:4.2.2" // Graph
+    implementation "com.clj.fastble:FastBleLib:2.3.4" // Bluetooth
+    implementation "com.github.PhilJay:MPAndroidChart-Realm:v3.0.3@aar" // Chart
+    implementation "com.github.PhilJay:MPAndroidChart:v3.0.3" // Chart
+    implementation "com.github.DavidProdinger:weekdays-selector:1.1.1"
+
+    // Testing
+    testImplementation "junit:junit:$junit"
+    androidTestImplementation "androidx.test.ext:junit:$junit_testing"
+    androidTestImplementation("androidx.test.espresso:espresso-core:$espresso", {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+}

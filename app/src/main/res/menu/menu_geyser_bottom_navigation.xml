@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_geyser_manual"
+        android:icon="@drawable/nav_manual_mode_icon_24"
+        android:title="Manual"
+        />
+    <item
+        android:id="@+id/nav_geyser_schedule"
+        android:icon="@drawable/nav_schedule_icon_24"
+        android:title="Schedule"
+        />
+    <item
+        android:id="@+id/nav_geyser_timer"
+        android:icon="@drawable/nav_timer_icon_24"
+        android:title="Timer"
+        />
+</menu>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/ic_android_mobile_1"
+    android:weightSum="10"
+    tools:context=".Activities.MainActivity">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardViewGraph"
+        android:layout_width="363dp"
+        android:layout_height="231dp"
+        android:elevation="10dp"
+        app:cardCornerRadius="10dp"
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="54dp">
+
+
+    </androidx.cardview.widget.CardView>
+
+    <ProgressBar
+        android:id="@+id/progress_bar_main"
+        style="@style/CircularDeterminateProgressBar"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+
+        tools:progress="60" />
+
+
+    <!--Custom tab layout-->
+
+
+</RelativeLayout>
