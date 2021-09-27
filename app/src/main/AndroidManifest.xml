@@ -27,6 +27,14 @@
             android:theme="@style/Theme.GridX03.NoActionBar"
             android:exported="true" />
         <activity
+            android:name=".Activities.RechargeActivity"
+            android:theme="@style/Theme.GridX03.NoActionBar"
+            android:exported="true" />
+        <activity
+            android:name=".Activities.StatsNavigationActivity"
+            android:theme="@style/Theme.GridX03.NoActionBar"
+            android:exported="true" />
+        <activity
             android:name=".Activities.MainActivity"
             android:theme="@style/Theme.GridX03.NoActionBar" />
         <activity

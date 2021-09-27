@@ -3,7 +3,6 @@ package com.example.gridx03.Activities;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
@@ -11,7 +10,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
@@ -24,7 +22,6 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionButton;
 import com.oguzdev.circularfloatingactionmenu.library.FloatingActionMenu;
-import com.oguzdev.circularfloatingactionmenu.library.SubActionButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,6 +34,7 @@ import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST_SEND;
 import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_CONNECT;
 import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_DISCONNECT;
 import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_STRING;
+import static com.example.gridx03.Sevices.BLEService.PAGE;
 
 public class MainActivity extends AppCompatActivity {
     public static final String GEYSERSTATE ="g_state";
@@ -54,20 +52,21 @@ public class MainActivity extends AppCompatActivity {
     AlertDialog ad, ae;
 
     static String[] scanContent = {"Wifi", "Bluetooth"};
-
-    // variable for our bar chart
     BarChart barChart;
-
-
-    // variable for our bar data.
     BarData barData;
-
-    // variable for our bar data set.
     BarDataSet barDataSet;
-
-    // array list for storing entries.
     ArrayList barEntriesArrayList;
     private ImageView GeyserButton;
+    private ImageView buttonRecharge;
+    private ImageView buttonStats;
+
+    private enum BLEStatus {
+        CONNECTED,
+        DISCONNECTED
+    }
+    private BLEStatus timerStatus = BLEStatus.DISCONNECTED;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,10 +75,12 @@ public class MainActivity extends AppCompatActivity {
         ProgressBarMeterUnits = findViewById(R.id.progress_bar_main);
         txtUnits = (TextView) findViewById(R.id.text_units);
         txtConsuption = (TextView) findViewById(R.id.text_consuption);
-        ProgressBarMeterUnits.setMax(200);
-
         GeyserButton = findViewById(R.id.image_geyser);
+        buttonRecharge = findViewById(R.id.image_recharge);
+        buttonStats = findViewById(R.id.image_statistics);
         BLEConnectionIcon = findViewById(R.id.image_ble_connection);
+
+        ProgressBarMeterUnits.setMax(200);
         BLEConnectionIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -95,7 +96,23 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+        buttonRecharge.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, RechargeActivity.class);
+                startActivity(intent);
+            }
+        });
+        buttonStats.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, StatsNavigationActivity.class);
+                startActivity(intent);
+            }
+        });
+
         setupChart();
+        sendBlEData();
 
 
     }
@@ -164,12 +181,14 @@ public class MainActivity extends AppCompatActivity {
 
                   if(GRIDX_BLE_CONNECT.equals(BleData)){
                       BLEConnectionIcon.setBackgroundColor(getResources().getColor(R.color.md_blue_100));
+                      timerStatus = BLEStatus.CONNECTED;
+                      sendBlEData();
 
                   }
                   else if(GRIDX_BLE_DISCONNECT.equals(BleData)){
                       BLEConnectionIcon.setBackgroundColor(getResources().getColor(R.color.md_white_1000));
-                      Intent serviceIntent = new Intent(getApplicationContext(), BLEService.class);
-                      stopService(serviceIntent);
+                      timerStatus = BLEStatus.DISCONNECTED;
+
                   }
                 }
 
@@ -212,6 +231,21 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(broadcastReceiver, filter);
 
     }
+    private void sendBlEData(){
+        String page = "0";
+        if(timerStatus == BLEStatus.CONNECTED){
+            JSONObject bleString = new JSONObject();
+            try {
+                bleString.put(PAGE, page);
+                Intent BLEIntent = new Intent(GRIDX_BLE_BROADCAST_SEND);
+                BLEIntent.putExtra(GRIDX_BLE_BROADCAST, bleString.toString());
+                sendBroadcast(BLEIntent);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
 
     @Override
     protected void onResume() {
@@ -220,6 +254,7 @@ public class MainActivity extends AppCompatActivity {
         registerReceiver(broadcastReceiver, filter);
         IntentFilter filterConnected = new IntentFilter(GRIDX_BLE_BROADCAST_SEND);
         registerReceiver(broadcastReceiver, filterConnected);
+        sendBlEData();
 
     }
 

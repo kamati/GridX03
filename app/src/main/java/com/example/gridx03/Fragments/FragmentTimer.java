@@ -56,7 +56,7 @@ public class FragmentTimer extends Fragment {
         STOPPED
     }
 
-    private TimerStatus timerStatus = TimerStatus.STARTED;
+    private TimerStatus timerStatus = TimerStatus.STOPPED;
 
     @Nullable
     @Override
@@ -78,34 +78,47 @@ public class FragmentTimer extends Fragment {
         return view;
     }
 
+    private void numberSelectorsListners(){
+        numHours.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
+            @Override
+            public void onValueChange(NumberPicker picker, int oldVal, int newVal) {
+
+            }
+        });
+
+    }
+
     private void initListeners() {
 
         imageViewStartStop.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 MotorVibrate();
+                String duringHours;
+                String duringMinutes;
+                String geyserTimeSetting;
+                if (numHours.getValue() < 10) {
+                    duringHours = String.valueOf("0" + numHours.getValue());
+                } else {
+                    duringHours = String.valueOf(numHours.getValue());
+                }
+
+                if (numMinutes.getValue() < 10) {
+                    duringMinutes = String.valueOf("0" + numMinutes.getValue());
+                } else {
+                    duringMinutes = String.valueOf(numMinutes.getValue());
+                }
+
+
                 if (timerStatus == TimerStatus.STOPPED) {
                     imageViewStartStop.setImageResource(R.drawable.ic_stop_geyser);
 
                     RegisterReciever();
-                    String duringHours;
-                    String duringMinutes;
-                    String geyserTimeSetting;
-                    if (numHours.getValue() < 10) {
-                        duringHours = String.valueOf("0" + numHours.getValue());
-                    } else {
-                        duringHours = String.valueOf(numHours.getValue());
-                    }
 
-                    if (numMinutes.getValue() < 10) {
-                        duringMinutes = String.valueOf("0" + numMinutes.getValue());
-                    } else {
-                        duringMinutes = String.valueOf(numMinutes.getValue());
-                    }
                     timeCountInMilliSeconds = (numHours.getValue() * 3600000) + (numMinutes.getValue() * 60000);
                     progressBarCircle.setMax((int) timeCountInMilliSeconds / 1000);
                     progressBarCircle.setProgress((int) timeCountInMilliSeconds / 1000);
-                    timerStatus = TimerStatus.STARTED;
+
 
                     JSONObject bleString = new JSONObject();
                     try {
@@ -147,14 +160,10 @@ public class FragmentTimer extends Fragment {
                     imageViewStartStop.setImageResource(R.drawable.ic_play_geyser_full);
                     timerStatus = TimerStatus.STOPPED;
 
-
-
                 }
                 return false;
             }
         });
-
-
 
     }
 
@@ -173,9 +182,9 @@ public class FragmentTimer extends Fragment {
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-
             if(GRIDX_BLE_BROADCAST_TIMER.equals(intent.getAction())){
                 String BleData= intent.getStringExtra(GRIDX_BLE_STRING);
+                timerStatus = TimerStatus.STARTED;
                 if(BleData!=null){
                     try {
                         JSONObject jObject = new JSONObject(BleData);

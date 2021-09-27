@@ -7,6 +7,7 @@
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/drawable/button1_bg.xml" value="0.18645833333333334" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/drawable/button_circle_progress.xml" value="0.253125" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/drawable/circle.xml" value="0.253125" />
+        <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/drawable/drawable_circle_dark_blue.xml" value="0.37604166666666666" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/drawable/ic_asset_2geyser.xml" value="0.37604166666666666" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/drawable/ic_back.xml" value="0.2140625" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/drawable/ic_baseline_play_circle_outline_24.xml" value="0.37604166666666666" />
@@ -26,19 +27,30 @@
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/activity_login.xml" value="0.2803442028985507" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/activity_main.xml" value="0.2803442028985507" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/activity_main_place_holder.xml" value="0.19791666666666666" />
+        <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/activity_recharge.xml" value="0.1" />
+        <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/activity_recharge_navigation.xml" value="0.17502532928064843" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/activity_signup.xml" value="0.2803442028985507" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/activity_start.xml" value="0.22" />
+        <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/activity_statistics_nagivation.xml" value="0.35989583333333336" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/content_main.xml" value="0.2803442028985507" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/content_start.xml" value="0.33" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/dash_test.xml" value="0.24583333333333332" />
+        <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/fragment_buy_token.xml" value="0.10925925925925926" />
+        <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/fragment_daily.xml" value="0.35989583333333336" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/fragment_first.xml" value="0.2803442028985507" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/fragment_manual_mode.xml" value="0.22" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/fragment_monthly.xml" value="0.1703125" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/fragment_schedule_mode.xml" value="0.3410565338276182" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/fragment_second.xml" value="0.2803442028985507" />
+        <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/fragment_send_token.xml" value="0.25" />
+        <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/fragment_stat_live.xml" value="0.35989583333333336" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/fragment_timer.xml" value="0.33" />
+        <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/layout/fragment_weekly.xml" value="0.35989583333333336" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/menu/menu_geyser_bottom_navigation.xml" value="0.1925925925925926" />
         <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/menu/menu_main.xml" value="0.1925925925925926" />
+        <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/menu/menu_recharge_bottom_navigation.xml" value="0.33055555555555555" />
+        <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/menu/menu_stats.xml" value="0.35989583333333336" />
+        <entry key="..\:/Users/hasheela/Desktop/GridXApp/GridX03/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.37604166666666666" />
       </map>
     </option>
   </component>

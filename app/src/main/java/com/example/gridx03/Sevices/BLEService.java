@@ -2,6 +2,7 @@ package com.example.gridx03.Sevices;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -29,6 +30,7 @@ import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.callback.BleWriteCallback;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.exception.BleException;
+import com.example.gridx03.Activities.MainActivity;
 import com.example.gridx03.Fragments.FragmentTimer;
 import com.example.gridx03.R;
 import com.example.gridx03.utils.CryptoManager;
@@ -47,6 +49,7 @@ import androidx.core.app.NotificationCompat;
 import static com.example.gridx03.utils.NotificationUtils.CHANNEL_1_ID;
 
 public class BLEService extends Service {
+    public static final String GRIDX_BLE_BROADCAST_TOKEN = "sts_token";
     public static final String GRIDX_BLE_BROADCAST_SEND="gridx_ble_broadcast_send";
     public static final String GRIDX_BLE_BROADCAST="gridx_ble_broadcast";
     public static final String GRIDX_BLE_BROADCAST_HOME = "home_page";
@@ -94,7 +97,7 @@ public class BLEService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        notificationUpdate("Bluetooth Connecting...");
+        notificationUpdate("Bluetooth Connecting...","Meter Bleutooth Connection");
 
 
     }
@@ -102,7 +105,7 @@ public class BLEService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        Toast.makeText(this, "onStartCommand called", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "onStartCommand called", Toast.LENGTH_SHORT).show();
         if(!BleManager.getInstance().isConnected(bleDevice)){
             initData(intent);
         }else{
@@ -118,7 +121,7 @@ public class BLEService extends Service {
 
         }
 
-        return START_REDELIVER_INTENT;
+        return START_NOT_STICKY;
     }
 
     private void initData(Intent intent) {
@@ -152,7 +155,7 @@ public class BLEService extends Service {
             showData();
             IntentFilter filter = new IntentFilter(GRIDX_BLE_BROADCAST_SEND);
             registerReceiver(broadcastReceiver, filter);
-            notificationUpdate("GRIDx Meter Connected");
+            notificationUpdate("GRIDx Meter Connected","Meter Bleutooth Connection");
 
             Intent BLEIntent = new Intent(GRIDX_BLE_BROADCAST_SEND);
             BLEIntent.putExtra(GRIDX_BLE_STRING,GRIDX_BLE_CONNECT);
@@ -192,6 +195,7 @@ public class BLEService extends Service {
         BleManager.getInstance().scan(new BleScanCallback() {
             @Override
             public void onScanStarted(boolean success) {
+                notificationUpdate("Searching For GriDx Meter...","Bleutooth Connection");
 
             }
 
@@ -226,18 +230,18 @@ public class BLEService extends Service {
             @Override
             public void onScanFinished(List<BleDevice> scanResultList) {
 
-               if(!MeterFound){
-                   notificationUpdate("Out of GRIDx bleutooth range");
-                   try{
-                       Intent BLEIntent = new Intent(GRIDX_BLE_BROADCAST_SEND);
-                       BLEIntent.putExtra(GRIDX_BLE_STRING,GRIDX_BLE_DISCONNECT);
-                       sendBroadcast(BLEIntent);
+                if(!MeterFound){
 
-                   }catch (Exception e){
+                    //Intent BLEIntent = new Intent(GRIDX_BLE_BROADCAST_SEND);
+                    //BLEIntent.putExtra(GRIDX_BLE_STRING,GRIDX_BLE_DISCONNECT);
+                    // sendBroadcast(BLEIntent);
 
-                   }
+                    notificationUpdate("Out of GRIDx bleutooth range","Bleutooth Connection");
+                    Toast.makeText(getBaseContext(), "Out of GRIDx bleutooth range", Toast.LENGTH_SHORT).show();
+                    Intent serviceIntent = new Intent(getApplicationContext(), BLEService.class);
+                    stopService(serviceIntent);
 
-               }
+                }
             }
         });
     }
@@ -246,12 +250,16 @@ public class BLEService extends Service {
         BleManager.getInstance().connect(bleDevice, new BleGattCallback() {
             @Override
             public void onStartConnect() {
+                notificationUpdate("Bluetooth Connecting...","Bleutooth Connection");
+
             }
 
             @Override
             public void onConnectFail(BleDevice bleDevice, BleException exception) {
 
                 Toast.makeText(getApplicationContext(), getString(R.string.connect_fail), Toast.LENGTH_LONG).show();
+                notificationUpdate("GridX Bluetooth Connection Fail","Bleutooth Connection");
+
             }
 
             @Override
@@ -361,14 +369,21 @@ public class BLEService extends Service {
                 });
     }
 
-    private void notificationUpdate(String data){
+    private void notificationUpdate(String data,String title){
+
+        Intent activityIntent = new Intent(this, MainActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this,
+                0, activityIntent, 0);
+
+
         Notification notification = new NotificationCompat.Builder(getBaseContext(), CHANNEL_1_ID)
                 .setSmallIcon(R.drawable.map_icon_green)
-                .setContentTitle("Geyser Timer")
+                .setContentTitle(title)
                 .setContentText(data)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setColor(Color.BLUE)
+                .setContentIntent(contentIntent)
                 .setAutoCancel(false)
                 .setOnlyAlertOnce(true)
                 .build();
@@ -378,54 +393,78 @@ public class BLEService extends Service {
 
     private void processEncrypedData(String data){
 
-            CryptoManager cryptoManager = new CryptoManager();
-            Log.d("mBLECyhper", "processEncrypedData: " + mBLECyhper);
-            String mBLEJsonString = cryptoManager.decrypt(mBLECyhper);
+        CryptoManager cryptoManager = new CryptoManager();
+        Log.d("mBLECyhper", "processEncrypedData: " + mBLECyhper);
+        String mBLEJsonString = cryptoManager.decrypt(mBLECyhper);
 
-           if(mBLEJsonString!=null){
-               notificationUpdate(mBLEJsonString);
+        if(mBLEJsonString!=null){
 
-               try {
-                   JSONObject jObject = new JSONObject(mBLEJsonString);
-                   int page = jObject.getInt(PAGE);
-                   Intent BLEIntent;
-                   switch (page){
-                       case 1:
-                           BLEIntent = new Intent(GRIDX_BLE_BROADCAST_HOME);
-                           BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
-                           sendBroadcast(BLEIntent);
-                           break;
-                       case 2:
-                           BLEIntent = new Intent(GRIDX_BLE_BROADCAST_MANUAL);
-                           BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
-                           sendBroadcast(BLEIntent);
-                           break;
-                       case 3:
-                           BLEIntent = new Intent(GRIDX_BLE_BROADCAST_TIMER);
-                           BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
-                           sendBroadcast(BLEIntent);
-                           break;
-                       case 4:
-                           BLEIntent = new Intent(GRIDX_BLE_BROADCAST_STATS);
-                           BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
-                           sendBroadcast(BLEIntent);
-                           break;
-                       case 5:
-                           BLEIntent = new Intent(GRIDX_BLE_BROADCAST_SCHEDULE);
-                           BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
-                           sendBroadcast(BLEIntent);
-                           break;
-                       default:
-                          // BLEIntent = new Intent(GRIDX_BLE_BROADCAST);
-                           //BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
-                           //sendBroadcast(BLEIntent);
-                   }
 
-               } catch (JSONException e) {
-                   e.printStackTrace();
-               }
+            try {
+                JSONObject jObject = new JSONObject(mBLEJsonString);
+                int page = jObject.getInt(PAGE);
+                Intent BLEIntent;
+                String unitInfom;
+                switch (page){
+                    case 1:
+                        unitInfom = "Units:"+jObject.getString("units")+"   Consumption: "+jObject.getString("consm");
+                        notificationUpdate(unitInfom,"GRIDx meter unit ");
+                        BLEIntent = new Intent(GRIDX_BLE_BROADCAST_HOME);
+                        BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
+                        sendBroadcast(BLEIntent);
+                        break;
+                    case 2:
+                        if(jObject.getInt("g_state")==0){
+                            unitInfom = "Geyser turned OFF";
+                        }else{
+                            unitInfom = "Geyser turned ON";
+                        }
 
-           }
+                        notificationUpdate(unitInfom,"Geyser on state");
+                        BLEIntent = new Intent(GRIDX_BLE_BROADCAST_MANUAL);
+                        BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
+                        sendBroadcast(BLEIntent);
+                        break;
+                    case 3:
+                        unitInfom = jObject.getString("hrs")+":"+jObject.getString("mins");
+                        notificationUpdate(unitInfom,"Geyser timer");
+                        BLEIntent = new Intent(GRIDX_BLE_BROADCAST_TIMER);
+                        BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
+                        sendBroadcast(BLEIntent);
+                        break;
+                    case 4:
+                        BLEIntent = new Intent(GRIDX_BLE_BROADCAST_STATS);
+                        BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
+                        sendBroadcast(BLEIntent);
+                        break;
+                    case 5:
+                        notificationUpdate(mBLEJsonString,"Geyser timer");
+                        BLEIntent = new Intent(GRIDX_BLE_BROADCAST_SCHEDULE);
+                        BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
+                        sendBroadcast(BLEIntent);
+                        break;
+                    case 11:
+                        if(jObject.getInt("OK")==0){
+                            unitInfom = "Meter token update failed ";
+                        }else{
+                            unitInfom = "Meter token updated successfully ";
+                        }
+                        notificationUpdate(unitInfom,"Meter Token response");
+                        BLEIntent = new Intent(GRIDX_BLE_BROADCAST_TOKEN);
+                        BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
+                        sendBroadcast(BLEIntent);
+                        break;
+                    default:
+                        // BLEIntent = new Intent(GRIDX_BLE_BROADCAST);
+                        //BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
+                        //sendBroadcast(BLEIntent);
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     @SuppressLint("ShowToast")
@@ -459,12 +498,12 @@ public class BLEService extends Service {
                 new BleWriteCallback() {
                     @Override
                     public void onWriteSuccess(final int current, final int total, final byte[] justWrite) {
-                       // runOnUiThread(() -> Log.d("sendmsg", "Device write is success"));
+                        // runOnUiThread(() -> Log.d("sendmsg", "Device write is success"));
                     }
 
                     @Override
                     public void onWriteFailure(final BleException exception) {
-                       // runOnUiThread(() -> Log.d("failed", "Device write is failed"));
+                        // runOnUiThread(() -> Log.d("failed", "Device write is failed"));
                     }
                 });
 
@@ -504,7 +543,7 @@ public class BLEService extends Service {
                         Log.d(" ESP32 encrypted", part);
                         sendData(part);
                         try {
-                            Thread.sleep(1000);
+                            Thread.sleep(200);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -513,7 +552,7 @@ public class BLEService extends Service {
                         String part = encryptedBLE.substring(i).replaceAll("\\s+", "");
                         sendData(part);
                         try {
-                            Thread.sleep(1000);
+                            Thread.sleep(200);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -529,7 +568,7 @@ public class BLEService extends Service {
     public void onDestroy() {
 
         super.onDestroy();
-        unregisterReceiver(broadcastReceiver);
+        //unregisterReceiver(broadcastReceiver);
     }
 
     @Nullable
