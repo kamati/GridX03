@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.gridx03">
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.READ_SMS" />
-
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission android:name="android.permission.SEND_SMS" />
-    <uses-permission android:name="android.permission.RECEIVE_SMS" />
-
-    <uses-permission android:name="android.permission.VIBRATE"/>
 
     <application
         android:name=".utils.NotificationUtils"
@@ -23,21 +11,26 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.GridX03">
         <activity
+            android:name=".Activities.STSSettings"
+            android:exported="true"
+            android:theme="@style/Theme.GridX03.NoActionBar"/>
+        <activity
             android:name=".Activities.GeyserNavigationActivity"
-            android:theme="@style/Theme.GridX03.NoActionBar"
-            android:exported="true" />
+            android:exported="true"
+            android:theme="@style/Theme.GridX03.NoActionBar" />
         <activity
             android:name=".Activities.RechargeActivity"
-            android:theme="@style/Theme.GridX03.NoActionBar"
-            android:exported="true" />
+            android:exported="true"
+            android:theme="@style/Theme.GridX03.NoActionBar" />
         <activity
             android:name=".Activities.StatsNavigationActivity"
-            android:theme="@style/Theme.GridX03.NoActionBar"
-            android:exported="true" />
+            android:exported="true"
+            android:theme="@style/Theme.GridX03.NoActionBar" />
         <activity
             android:name=".Activities.MainActivity"
             android:theme="@style/Theme.GridX03.NoActionBar" />
         <activity
+
             android:name=".Activities.LoginActivity"
             android:exported="true"
             android:label="@string/app_name"
@@ -48,10 +41,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service
-            android:name=".Sevices.BLEService" >
 
-        </service>
+        <service android:name=".Sevices.BLEService"></service>
     </application>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.RECEIVE_SMS" />
+
+    <uses-permission android:name="android.permission.VIBRATE" />
 
 </manifest>

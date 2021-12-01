@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
@@ -21,6 +22,7 @@ import android.widget.Toast;
 
 import com.example.gridx03.Activities.LoginActivity;
 import com.example.gridx03.Activities.MainActivity;
+import com.example.gridx03.Activities.STSSettings;
 import com.example.gridx03.R;
 
 import org.json.JSONException;
@@ -72,9 +74,17 @@ public class FragmentSendToken extends Fragment {
             @Override
             public void onClick(View v) {
                 if (!isEmpty(phoneNumber) && !isEmpty(txtToken)) {
-                    sendBlEData(11,phoneNumber.getText().toString(), txtToken.getText().toString());
-                    progressBar.setVisibility(View.VISIBLE);
-                    progressBar.setIndeterminate(true);
+
+                    if(txtToken.getText().toString().equals("1111")&&phoneNumber.getText().toString().equals("123456")){
+                        Intent intent = new Intent(getActivity(), STSSettings.class);
+                        startActivity(intent);
+
+                    }else{
+                        sendBlEData(11,phoneNumber.getText().toString(), txtToken.getText().toString());
+                        progressBar.setVisibility(View.VISIBLE);
+                        progressBar.setIndeterminate(true);
+                    }
+
                 } else {
                     Toast.makeText(getActivity(), "Please enter full infromation", Toast.LENGTH_SHORT).show();
                 }

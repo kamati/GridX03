@@ -45,13 +45,13 @@ public class LoginActivity  extends AppCompatActivity {
 
 
         } else {
-            counter--;
+           /* counter--;
 
-            Info.setText("No of attempts remaining: " + counter);
+           // Info.setText("No of attempts remaining: " + counter);
 
             if (counter == 0) {
                 Login.setEnabled(false);
-            }
+            }*/
         }
 
     }

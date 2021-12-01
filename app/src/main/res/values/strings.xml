@@ -147,6 +147,25 @@
     <string name="token_number">Token Number</string>
     <string name="header_send_token">Send Token</string>
     <string name="buy_token">Buy Token</string>
+    <string name="STS_test_settings">STS Test Settings</string>
+
+    <string name="sts_factory_reset"> Factory Reset</string>
+    <string name="sts_token_reset">Token Reset</string>
+    <string name="sts_credit_max">Set Credit Max</string>
+    <string name="sts_credit_zero">Set Credit Zero</string>
+    <string name="sts_token_stack">Reset Token Stack</string>
+    <string name="sts_meter_configurations">Meter Configurations</string>
+    <string name="sts_meter_types">Test Types</string>
+
+
+    <string name="sts_CTSD_UUT02">CTSD: UUT02</string>
+    <string name="sts_CTSE_UUT01">CTSE:UUT01</string>
+    <string name="sts_CTSE_UUT02">CTSE:UUT02</string>
+    <string name="sts_CTSE_UUT03">CTSE:UUT03</string>
+
+    <string name="sts_CTSF_UUT01">CTSF:UUT01</string>
+    <string name="sts_CTSF_UUT02">CTSF:UUT02</string>
+    <string name="sts_CTSF_UUT03">CTSF:UUT03</string>
 
 
     <!--

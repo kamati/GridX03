@@ -84,6 +84,7 @@ public class BLEService extends Service {
     private volatile boolean stopThread = false;
     private String mBLECyhper="";
     String mBLEJsonString = "";
+    String BleDataToBeSend;
     private enum BLEStatus {
         CONNECTED,
         DISCONNECTED
@@ -284,9 +285,6 @@ public class BLEService extends Service {
                     Toast.makeText(getApplicationContext(), getString(R.string.active_disconnected), Toast.LENGTH_LONG).show();
                     Intent serviceIntent = new Intent(getBaseContext(), BLEService.class);
                     stopService(serviceIntent);
-
-
-
                 }
 
             }
@@ -394,8 +392,9 @@ public class BLEService extends Service {
     private void processEncrypedData(String data){
 
         CryptoManager cryptoManager = new CryptoManager();
-        Log.d("mBLECyhper", "processEncrypedData: " + mBLECyhper);
+        Log.d("mBLECyhper2", "processEncrypedData: " + mBLECyhper);
         String mBLEJsonString = cryptoManager.decrypt(mBLECyhper);
+        Log.d("mBLECyhper", "processEncrypedData: " + mBLEJsonString);
 
         if(mBLEJsonString!=null){
 
@@ -406,6 +405,10 @@ public class BLEService extends Service {
                 Intent BLEIntent;
                 String unitInfom;
                 switch (page){
+                    case 0:
+                        BLESendThread thread = new BLESendThread(BleDataToBeSend);
+                        thread.start();
+                        break;
                     case 1:
                         unitInfom = "Units:"+jObject.getString("units")+"   Consumption: "+jObject.getString("consm");
                         notificationUpdate(unitInfom,"GRIDx meter unit ");
@@ -455,15 +458,18 @@ public class BLEService extends Service {
                         sendBroadcast(BLEIntent);
                         break;
                     default:
-                        // BLEIntent = new Intent(GRIDX_BLE_BROADCAST);
-                        //BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
-                        //sendBroadcast(BLEIntent);
+                        //BLESendThread thread = new BLESendThread(BleDataToBeSend);
+                        //thread.start();
                 }
 
             } catch (JSONException e) {
                 e.printStackTrace();
             }
 
+        } else{
+            Log.d("mBLECyhper", "Returned Null ");
+            BLESendThread thread = new BLESendThread(BleDataToBeSend);
+            thread.start();
         }
     }
 
@@ -581,9 +587,9 @@ public class BLEService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if(GRIDX_BLE_BROADCAST_SEND.equals(intent.getAction())){
-                String BleData= intent.getStringExtra(GRIDX_BLE_BROADCAST);
-                if(BleData!=null){
-                    BLESendThread thread = new BLESendThread(BleData);
+                 BleDataToBeSend= intent.getStringExtra(GRIDX_BLE_BROADCAST);
+                if(BleDataToBeSend!=null){
+                    BLESendThread thread = new BLESendThread(BleDataToBeSend);
                     thread.start();
                 }
 
