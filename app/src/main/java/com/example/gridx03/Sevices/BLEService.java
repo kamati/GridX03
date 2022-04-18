@@ -1,5 +1,6 @@
 package com.example.gridx03.Sevices;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -26,11 +27,13 @@ import android.widget.Toast;
 import com.clj.fastble.BleManager;
 import com.clj.fastble.callback.BleGattCallback;
 import com.clj.fastble.callback.BleNotifyCallback;
+import com.clj.fastble.callback.BleReadCallback;
 import com.clj.fastble.callback.BleScanCallback;
 import com.clj.fastble.callback.BleWriteCallback;
 import com.clj.fastble.data.BleDevice;
 import com.clj.fastble.exception.BleException;
 import com.example.gridx03.Activities.MainActivity;
+import com.example.gridx03.DBHelper.TokenHistoryDOA;
 import com.example.gridx03.Fragments.FragmentTimer;
 import com.example.gridx03.R;
 import com.example.gridx03.utils.CryptoManager;
@@ -46,28 +49,40 @@ import java.util.List;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import static com.example.gridx03.Fragments.FragmentTokenHistory.GRIDX_BLE_BROADCAST_TOKEN_HISTORY;
+import static com.example.gridx03.utils.BLE_Costants.CHARACTERISTIC_GEYSER_MANUAL_MODE;
+import static com.example.gridx03.utils.BLE_Costants.CHARACTERISTIC_GEYSER_SCHEDULE_MODE;
+import static com.example.gridx03.utils.BLE_Costants.CHARACTERISTIC_GEYSER_TIMER_MODE;
+import static com.example.gridx03.utils.BLE_Costants.CHARACTERISTIC_LONG_DATA;
+import static com.example.gridx03.utils.BLE_Costants.CHARACTERISTIC_STS_TOKEN;
+import static com.example.gridx03.utils.BLE_Costants.CHARACTERISTIC_TOKEN_HISTORY;
+import static com.example.gridx03.utils.BLE_Costants.CHARACTERISTIC_UUID_RX;
+import static com.example.gridx03.utils.BLE_Costants.CHARACTERISTIC_UUID_TX;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_HOME;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_MANUAL;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_READ;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_SCHEDULE;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_SEND;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_STATS;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_TIMER;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_TOKEN;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_CONNECT;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_DISCONNECT;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_SEND_BROADCAST_HOME;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_SEND_BROADCAST_MANUAL;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_SEND_BROADCAST_SCHEDULE;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_SEND_BROADCAST_STATS;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_SEND_BROADCAST_TIMER;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_SEND_BROADCAST_TOKEN;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_STRING;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_DEVICE_NAME;
+import static com.example.gridx03.utils.BLE_Costants.METER_SERVICE_UUID;
 import static com.example.gridx03.utils.NotificationUtils.CHANNEL_1_ID;
 
 public class BLEService extends Service {
-    public static final String GRIDX_BLE_BROADCAST_TOKEN = "sts_token";
-    public static final String GRIDX_BLE_BROADCAST_SEND="gridx_ble_broadcast_send";
-    public static final String GRIDX_BLE_BROADCAST="gridx_ble_broadcast";
-    public static final String GRIDX_BLE_BROADCAST_HOME = "home_page";
-    public static final String GRIDX_BLE_BROADCAST_TIMER = "timer_page";
-    public static final String GRIDX_BLE_BROADCAST_MANUAL = "manual_page";
-    public static final String GRIDX_BLE_BROADCAST_SCHEDULE = "schedule_page";
-    public static final String GRIDX_BLE_BROADCAST_STATS = "stats_page";
-    public static final String GRIDX_BLE_STRING="gridx_ble_string";
-    public static final String GRIDX_BLE_DISCONNECT = "gridx_disconnect";
-    public static final String GRIDX_BLE_CONNECT = "gridx_connect";
-    public static final String GRIDX_DEVICE_NAME= "PulsarESP32Demo";
 
 
-
-    private static final String KEY_DATA = "key_data";
-    private static final String METER_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
-    private static final String CHARACTERISTIC_UUID_TX = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E";
-    private static final String CHARACTERISTIC_UUID_RX = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";
     public static final String PAGE="page";
 
     Boolean MeterFound = false;
@@ -85,6 +100,8 @@ public class BLEService extends Service {
     private String mBLECyhper="";
     String mBLEJsonString = "";
     String BleDataToBeSend;
+
+    String currentCharacteristics=CHARACTERISTIC_UUID_RX;
     private enum BLEStatus {
         CONNECTED,
         DISCONNECTED
@@ -98,15 +115,13 @@ public class BLEService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        notificationUpdate("Bluetooth Connecting...","Meter Bleutooth Connection");
-
-
+        notificationUpdate("Bluetooth connecting...","GRIDx bluetooth connection");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        currentCharacteristics = CHARACTERISTIC_UUID_TX;
 
-        //Toast.makeText(this, "onStartCommand called", Toast.LENGTH_SHORT).show();
         if(!BleManager.getInstance().isConnected(bleDevice)){
             initData(intent);
         }else{
@@ -154,9 +169,16 @@ public class BLEService extends Service {
 
         }else{
             showData();
-            IntentFilter filter = new IntentFilter(GRIDX_BLE_BROADCAST_SEND);
+            IntentFilter filter = new IntentFilter();
+            filter.addAction(GRIDX_BLE_BROADCAST_SEND);
+            filter.addAction(GRIDX_BLE_SEND_BROADCAST_HOME);
+            filter.addAction(GRIDX_BLE_SEND_BROADCAST_TIMER);
+            filter.addAction(GRIDX_BLE_SEND_BROADCAST_MANUAL);
+            filter.addAction(GRIDX_BLE_SEND_BROADCAST_STATS);
+            filter.addAction(GRIDX_BLE_SEND_BROADCAST_SCHEDULE);
+            filter.addAction(GRIDX_BLE_SEND_BROADCAST_TOKEN);
             registerReceiver(broadcastReceiver, filter);
-            notificationUpdate("GRIDx Meter Connected","Meter Bleutooth Connection");
+            notificationUpdate("GRIDx  connected","GRIDx bluetooth connection");
 
             Intent BLEIntent = new Intent(GRIDX_BLE_BROADCAST_SEND);
             BLEIntent.putExtra(GRIDX_BLE_STRING,GRIDX_BLE_CONNECT);
@@ -189,28 +211,34 @@ public class BLEService extends Service {
                 .setReConnectCount(1, 5000)
                 .setConnectOverTime(20000)
                 .setOperateTimeout(5000);
-        checkPermissions();
+        startScan();
 
     }
     private void startScan() {
         BleManager.getInstance().scan(new BleScanCallback() {
             @Override
             public void onScanStarted(boolean success) {
-                notificationUpdate("Searching For GriDx Meter...","Bleutooth Connection");
+                if(success){
+                    notificationUpdate("Started bluetooth scan. ","Bluetooth connection");
+                }else {
+                    notificationUpdate("failed to start bluetooth scan. ","Bluetooth connection");
+                }
 
             }
 
             @Override
             public void onLeScan(BleDevice bleDevice) {
                 super.onLeScan(bleDevice);
+
             }
 
             @Override
             public void onScanning(BleDevice bleDevice) {
+                notificationUpdate("Searching for GRIDx...","Bluetooth connection");
                 try {
 
                     if (bleDevice.getName().regionMatches(true, 0,
-                            GRIDX_DEVICE_NAME, 0, 15)) {
+                            GRIDX_DEVICE_NAME, 0, 5)) {
 
                         Log.d("Bluetooth", "Found the bluetooth device");
                         MeterFound = true;
@@ -237,8 +265,8 @@ public class BLEService extends Service {
                     //BLEIntent.putExtra(GRIDX_BLE_STRING,GRIDX_BLE_DISCONNECT);
                     // sendBroadcast(BLEIntent);
 
-                    notificationUpdate("Out of GRIDx bleutooth range","Bleutooth Connection");
-                    Toast.makeText(getBaseContext(), "Out of GRIDx bleutooth range", Toast.LENGTH_SHORT).show();
+                    notificationUpdate("Out of GRIDx bleutooth range","bluetooth Connection");
+                    Toast.makeText(getBaseContext(), "Out of GRIDx bluetooth range", Toast.LENGTH_SHORT).show();
                     Intent serviceIntent = new Intent(getApplicationContext(), BLEService.class);
                     stopService(serviceIntent);
 
@@ -278,6 +306,7 @@ public class BLEService extends Service {
                 if (isActiveDisConnected) {
 
                 } else {
+                    unregisterReceiver(broadcastReceiver);
                     Intent BLEIntent = new Intent(GRIDX_BLE_BROADCAST_SEND);
                     BLEIntent.putExtra(GRIDX_BLE_STRING,GRIDX_BLE_DISCONNECT);
                     sendBroadcast(BLEIntent);
@@ -291,14 +320,7 @@ public class BLEService extends Service {
         });
     }
 
-    private void checkPermissions() {
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (!bluetoothAdapter.isEnabled()) {
-            Toast.makeText(this, getString(R.string.please_open_blue), Toast.LENGTH_LONG).show();
-            return;
-        }
-        startScan();
-    }
+
     @SuppressLint("ShowToast")
     private void showData() {
         String name = bleDevice.getName();
@@ -310,19 +332,43 @@ public class BLEService extends Service {
                 bluetoothGattService = service;
                 for (BluetoothGattCharacteristic Characteristic : service.getCharacteristics()) {
                     characteristic = Characteristic;
-                    if (CHARACTERISTIC_UUID_RX.equalsIgnoreCase(characteristic.getUuid().toString())) {
-                        readData(characteristic);
+                    Log.d("serverSereach", "METER_SERVICE_UUID");
+                    if (CHARACTERISTIC_UUID_TX.equalsIgnoreCase(characteristic.getUuid().toString())) {
+                        NotificationData(characteristic);
+                        Log.d("serverSereach", "CHARACTERISTIC_UUID_RX");
                     }
+
+
                 }
             }
         }
     }
 
-    private void readData(final BluetoothGattCharacteristic Characteristic) {
+
+    private void onreadCharacteristic(final BluetoothGattCharacteristic Characteristic){
+        BleManager.getInstance().read(bleDevice, Characteristic.getService().getUuid().toString(), Characteristic.getUuid().toString(),
+                new BleReadCallback() {
+                    @Override
+                    public void onReadSuccess(byte[] data) {
+                        String incomingBLE =  new String(Characteristic.getValue(), StandardCharsets.UTF_8);
+                        Log.d("incomingBLE", incomingBLE);
+
+                    }
+
+                    @Override
+                    public void onReadFailure(BleException exception) {
+                        Log.d("incomingBLE", exception.toString());
+
+                    }
+                });
+    }
+
+    private void NotificationData(final BluetoothGattCharacteristic Characteristic) {
         BleManager.getInstance().notify(
                 bleDevice,
                 Characteristic.getService().getUuid().toString(),
                 Characteristic.getUuid().toString(),
+
                 new BleNotifyCallback() {
                     @Override
                     public void onNotifySuccess() {
@@ -345,15 +391,19 @@ public class BLEService extends Service {
                     public void onCharacteristicChanged(byte[] data) {
                         Handler threadHandler = new Handler(Looper.getMainLooper());
                         threadHandler.post(() -> {
+                            // Toast.makeText(getBaseContext(), "test input", Toast.LENGTH_SHORT).show();
                             String incomingBLE =  new String(Characteristic.getValue(), StandardCharsets.UTF_8);
-                            Log.d("TAG", incomingBLE);
+                            Log.d("incomingBLE", incomingBLE);
 
                             if(String.valueOf(incomingBLE).contains("@") == true){
                                 String[] parts = incomingBLE.split("@");
                                 String part1 = parts[0];
                                 mBLECyhper = mBLECyhper + part1;
-                                processEncrypedData(mBLECyhper);
-                                Log.d("TAG2", mBLECyhper);
+                                if(mBLECyhper.length()>19){
+                                    processEncrypedData(mBLECyhper);
+                                    Log.d("mBLECyhper", mBLECyhper);
+                                }
+
                                 mBLECyhper="";
 
                             }
@@ -410,13 +460,6 @@ public class BLEService extends Service {
                         thread.start();
                         break;
                     case 1:
-                        unitInfom = "Units:"+jObject.getString("units")+"   Consumption: "+jObject.getString("consm");
-                        notificationUpdate(unitInfom,"GRIDx meter unit ");
-                        BLEIntent = new Intent(GRIDX_BLE_BROADCAST_HOME);
-                        BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
-                        sendBroadcast(BLEIntent);
-                        break;
-                    case 2:
                         if(jObject.getInt("g_state")==0){
                             unitInfom = "Geyser turned OFF";
                         }else{
@@ -427,6 +470,18 @@ public class BLEService extends Service {
                         BLEIntent = new Intent(GRIDX_BLE_BROADCAST_MANUAL);
                         BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
                         sendBroadcast(BLEIntent);
+                        /*unitInfom = "Units:"+jObject.getString("units")+"   Consumption: "+jObject.getString("consm");
+                        notificationUpdate(unitInfom,"GRIDx meter unit ");
+                        BLEIntent = new Intent(GRIDX_BLE_BROADCAST_HOME);
+                        BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
+                        sendBroadcast(BLEIntent);*/
+                        break;
+                    case 21:
+                        unitInfom = "Units:"+jObject.getString("units")+"   Consumption: "+jObject.getString("consm");
+                        notificationUpdate(unitInfom,"GRIDx meter unit ");
+                        BLEIntent = new Intent(GRIDX_BLE_BROADCAST_HOME);
+                        BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
+                        sendBroadcast(BLEIntent);
                         break;
                     case 3:
                         unitInfom = jObject.getString("hrs")+":"+jObject.getString("mins");
@@ -434,6 +489,7 @@ public class BLEService extends Service {
                         BLEIntent = new Intent(GRIDX_BLE_BROADCAST_TIMER);
                         BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
                         sendBroadcast(BLEIntent);
+                        BleDataToBeSend = mBLEJsonString;
                         break;
                     case 4:
                         BLEIntent = new Intent(GRIDX_BLE_BROADCAST_STATS);
@@ -456,6 +512,36 @@ public class BLEService extends Service {
                         BLEIntent = new Intent(GRIDX_BLE_BROADCAST_TOKEN);
                         BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
                         sendBroadcast(BLEIntent);
+                        break;
+                    case 13:
+                        if(jObject.getInt("OK")==0){
+                            unitInfom = " Failed to set schedule";
+                        }else{
+                            unitInfom = "Successfully set Schedule ";
+                        }
+                        notificationUpdate(unitInfom,"Geyser schedule");
+                        BLEIntent = new Intent(GRIDX_BLE_BROADCAST_SCHEDULE);
+                        BLEIntent.putExtra(GRIDX_BLE_STRING,mBLEJsonString);
+                        sendBroadcast(BLEIntent);
+                        break;
+                    case 14:
+                        if(mBLEJsonString!=null){
+
+                            try {
+
+                                TokenHistoryDOA tokenDOA = new TokenHistoryDOA(getApplicationContext());
+                                String tokenId= jObject.getString("1");
+                                String date= jObject.getString("2");
+                                String amount= jObject.getString("3");
+                                // tokenDOA.deleteAllTokensStats();
+
+                                tokenDOA.CreateTokenItem(tokenId,date,amount);
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                        }
                         break;
                     default:
                         //BLESendThread thread = new BLESendThread(BleDataToBeSend);
@@ -486,30 +572,31 @@ public class BLEService extends Service {
                 bluetoothGattService = service;
                 for (BluetoothGattCharacteristic Characteristic : service.getCharacteristics()) {
                     characteristic = Characteristic;
-                    if (CHARACTERISTIC_UUID_TX.equalsIgnoreCase(characteristic.getUuid().toString())) {
+                    if (CHARACTERISTIC_GEYSER_MANUAL_MODE.equalsIgnoreCase(characteristic.getUuid().toString())) {
                         Log.d("sendmsg", "Devcie Send for write");
-                        WriteData(characteristic, data);
+                       // WriteData(characteristic, data);
                     }
                 }
             }
         }
     }
 
-    private void WriteData(BluetoothGattCharacteristic characteristic, String data) {
+    private void WriteData( String data) {
+
         BleManager.getInstance().write(
                 bleDevice,
-                characteristic.getService().getUuid().toString(),
-                characteristic.getUuid().toString(),
+                METER_SERVICE_UUID,
+                currentCharacteristics,
                 stringToHex(data),
                 new BleWriteCallback() {
                     @Override
                     public void onWriteSuccess(final int current, final int total, final byte[] justWrite) {
-                        // runOnUiThread(() -> Log.d("sendmsg", "Device write is success"));
+                        Log.d("onWriteSuccess", "onWriteSuccess");
                     }
 
                     @Override
                     public void onWriteFailure(final BleException exception) {
-                        // runOnUiThread(() -> Log.d("failed", "Device write is failed"));
+                        Log.d("onWriteSuccess", "onWriteFailure");
                     }
                 });
 
@@ -528,6 +615,7 @@ public class BLEService extends Service {
     class BLESendThread extends Thread {
         String mEncrypted = "";
 
+
         BLESendThread(String encrypted) {
             this.mEncrypted = encrypted;
 
@@ -538,7 +626,7 @@ public class BLEService extends Service {
             String encrypted = cryptoManager.encrypt(mEncrypted);
             String encryptedBLE = encrypted + "@";
             String decrpyted = cryptoManager.decrypt(encrypted);
-            Log.d("  encrypted", encrypted);
+            Log.d("  BLE_SERCIVR_encrypted", encrypted);
             int bleBlock = 20;
             if (mEncrypted.equals(decrpyted)) {
                 for (int i = 0; i < encryptedBLE.length(); i = i + bleBlock) {
@@ -547,7 +635,7 @@ public class BLEService extends Service {
                     if (y < encryptedBLE.length()) {
                         String part = encryptedBLE.substring(i, y).replaceAll("\\s+", "");
                         Log.d(" ESP32 encrypted", part);
-                        sendData(part);
+                        WriteData(part);
                         try {
                             Thread.sleep(200);
                         } catch (InterruptedException e) {
@@ -556,7 +644,7 @@ public class BLEService extends Service {
 
                     } else if (y > encryptedBLE.length()) {
                         String part = encryptedBLE.substring(i).replaceAll("\\s+", "");
-                        sendData(part);
+                        WriteData(part);
                         try {
                             Thread.sleep(200);
                         } catch (InterruptedException e) {
@@ -574,8 +662,10 @@ public class BLEService extends Service {
     public void onDestroy() {
 
         super.onDestroy();
-        //unregisterReceiver(broadcastReceiver);
+        unregisterReceiver(broadcastReceiver);
     }
+
+
 
     @Nullable
     @Override
@@ -586,14 +676,56 @@ public class BLEService extends Service {
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+
+           Log.d("GRIDX_BLE_BROADCAST_TOKEN", "BroadcastReceiver registered");
             if(GRIDX_BLE_BROADCAST_SEND.equals(intent.getAction())){
-                 BleDataToBeSend= intent.getStringExtra(GRIDX_BLE_BROADCAST);
+                BleDataToBeSend= intent.getStringExtra(GRIDX_BLE_BROADCAST);
+
+            }
+            else if(GRIDX_BLE_SEND_BROADCAST_TIMER.equals(intent.getAction())){
+                BleDataToBeSend= intent.getStringExtra(GRIDX_BLE_BROADCAST);
+                currentCharacteristics = CHARACTERISTIC_GEYSER_TIMER_MODE;
+                Log.d("GRIDX_BLE_BROADCAST_TOKEN", BleDataToBeSend);
+
+            }
+            else if(GRIDX_BLE_SEND_BROADCAST_MANUAL.equals(intent.getAction())){
+                BleDataToBeSend= intent.getStringExtra(GRIDX_BLE_BROADCAST);
+                currentCharacteristics = CHARACTERISTIC_GEYSER_MANUAL_MODE;
+                Log.d("GRIDX_BLE_BROADCAST_TOKEN", BleDataToBeSend);
+            }
+            else if(GRIDX_BLE_SEND_BROADCAST_SCHEDULE.equals(intent.getAction())){
+                BleDataToBeSend= intent.getStringExtra(GRIDX_BLE_BROADCAST);
+                currentCharacteristics = CHARACTERISTIC_GEYSER_SCHEDULE_MODE;
+                Log.d("GRIDX_BLE_BROADCAST_TOKEN", BleDataToBeSend);
+            }
+            else if(GRIDX_BLE_SEND_BROADCAST_TOKEN.equals(intent.getAction())){
+                BleDataToBeSend= intent.getStringExtra(GRIDX_BLE_BROADCAST);
+                Log.d("GRIDX_BLE_BROADCAST_TOKEN", BleDataToBeSend);
+                currentCharacteristics = CHARACTERISTIC_STS_TOKEN;
+            }
+            else if(GRIDX_BLE_SEND_BROADCAST_STATS.equals(intent.getAction())){
+                BleDataToBeSend= intent.getStringExtra(GRIDX_BLE_BROADCAST);
+                currentCharacteristics = CHARACTERISTIC_TOKEN_HISTORY;
+                Log.d("GRIDX_BLE_BROADCAST_TOKEN", BleDataToBeSend);
+            }
+
+
+            if(BleDataToBeSend!=null){
+                BLESendThread thread = new BLESendThread(BleDataToBeSend);
+                thread.start();
+            }
+
+            /*
+            if(GRIDX_BLE_BROADCAST_READ.equals(intent.getAction())){
+                BluetoothGatt gatt = BleManager.getInstance().getBluetoothGatt(bleDevice);
+                BleDataToBeSend= intent.getStringExtra(GRIDX_BLE_BROADCAST);
                 if(BleDataToBeSend!=null){
-                    BLESendThread thread = new BLESendThread(BleDataToBeSend);
+                    BLESendThread thread = new BLESendThread();
                     thread.start();
                 }
 
-            }
+            }*/
+
         }
     };
 

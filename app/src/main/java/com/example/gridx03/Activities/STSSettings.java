@@ -18,10 +18,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import static com.example.gridx03.Fragments.FragmentSendToken.OK;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST_SEND;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST_TOKEN;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_STRING;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_SEND;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_STS;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_TOKEN;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_STRING;
 import static com.example.gridx03.Sevices.BLEService.PAGE;
 
 public class STSSettings extends AppCompatActivity {
@@ -172,7 +173,7 @@ public class STSSettings extends AppCompatActivity {
     BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(GRIDX_BLE_BROADCAST_TOKEN.equals(intent.getAction())){
+            if(GRIDX_BLE_BROADCAST_STS.equals(intent.getAction())){
                 String BleData= intent.getStringExtra(GRIDX_BLE_STRING);
                 if(BleData!=null){
                     JSONObject jObject = null;

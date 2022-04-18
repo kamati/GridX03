@@ -12,7 +12,7 @@ public class CryptoManager {
     private String privateKey = "your_private_key_here";
     private String ivString = "your_iv_here";
 
-    byte aes_key[] = {0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x03};
+    byte aes_key[] = { 0x2B, 0x7E, 0x15, 0x16, 0x28, 0x3C, 0x3C, 0x3C, 0x3C, 0x3C, 0x15, 0x3C, 0x09, 0x3C, 0x4F, 0x3C };
 
     // General initialization vector (you must use your own IV's in production for full security!!!)
     byte aes_iv[] = {0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30, 0x30};
@@ -24,11 +24,11 @@ public class CryptoManager {
 
 
     public String encrypt(String plainText) {
-        String key1 =    "0000000000000000";
+        String key1 =    "444444444444444P";
         String iv1 =      "0000000000000000";
         try {
-            IvParameterSpec iv = new IvParameterSpec(iv1.getBytes());
-            SecretKeySpec skeySpec = new SecretKeySpec(key1.getBytes(), "AES");
+            IvParameterSpec iv = new IvParameterSpec(iv1.getBytes(StandardCharsets.UTF_8));
+            SecretKeySpec skeySpec = new SecretKeySpec(aes_key, "AES");
 
             String base54PlainText= android.util.Base64.encodeToString(plainText.getBytes(), android.util.Base64.DEFAULT);
 
@@ -46,12 +46,12 @@ public class CryptoManager {
 
 
     public String decrypt(String encrypted) {
-        String key1 =    "0000000000000000";
+        String key1 =    "4444444444444444";
         String iv1 =      "0000000000000000";
         try {
 
             IvParameterSpec iv = new IvParameterSpec(iv1.getBytes());
-            SecretKeySpec skeySpec = new SecretKeySpec(key1.getBytes(), "AES");
+            SecretKeySpec skeySpec = new SecretKeySpec(aes_key, "AES");
 
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5PADDING");
             cipher.init(Cipher.DECRYPT_MODE, skeySpec, iv);

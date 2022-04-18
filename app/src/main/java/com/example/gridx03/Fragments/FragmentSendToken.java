@@ -20,21 +20,21 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.gridx03.Activities.LoginActivity;
-import com.example.gridx03.Activities.MainActivity;
+
 import com.example.gridx03.Activities.STSSettings;
+import com.example.gridx03.DBHelper.TokenHistoryDOA;
 import com.example.gridx03.R;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import static android.text.TextUtils.isEmpty;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST_MANUAL;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST_SEND;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST_TOKEN;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_STRING;
+
 import static com.example.gridx03.Sevices.BLEService.PAGE;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_READ;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_TOKEN;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_SEND_BROADCAST_TOKEN;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_STRING;
 
 
 public class FragmentSendToken extends Fragment {
@@ -43,7 +43,7 @@ public class FragmentSendToken extends Fragment {
     public static final String BLE_METER_TOKEN = "token";
     public static final String OK ="OK";
     public static final String RESPONSE ="res";
-    private EditText phoneNumber;
+
     private EditText txtToken;
     private Button buttonSendToken;
     private ProgressBar progressBar;
@@ -61,7 +61,6 @@ public class FragmentSendToken extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view =inflater.inflate(R.layout.fragment_send_token, container, false);
         // Inflate the layout for this fragment
-        phoneNumber = view.findViewById(R.id.edit_phone_number);
         txtToken =  view.findViewById(R.id.edit_token_number);
         txtSendTokenResponse =  view.findViewById(R.id.txt_token_feedback);
         buttonSendToken =  view.findViewById(R.id.button_send_token);
@@ -73,14 +72,17 @@ public class FragmentSendToken extends Fragment {
         buttonSendToken.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!isEmpty(phoneNumber) && !isEmpty(txtToken)) {
+                TokenHistoryDOA tokenDOA = new TokenHistoryDOA(getContext());
+                tokenDOA.deleteAllTokensStats();
+                 sendBlEData(91,"hi");
+                if (!isEmpty(txtToken)) {
 
-                    if(txtToken.getText().toString().equals("1111")&&phoneNumber.getText().toString().equals("123456")){
+                    if(txtToken.getText().toString().equals("1111")){
                         Intent intent = new Intent(getActivity(), STSSettings.class);
                         startActivity(intent);
 
                     }else{
-                        sendBlEData(11,phoneNumber.getText().toString(), txtToken.getText().toString());
+                        sendBlEData(11, txtToken.getText().toString());
                         progressBar.setVisibility(View.VISIBLE);
                         progressBar.setIndeterminate(true);
                     }
@@ -98,14 +100,13 @@ public class FragmentSendToken extends Fragment {
         return etText.getText().toString().trim().length() <= 0;
     }
 
-    private void sendBlEData(int page,String num,String token){
+    private void sendBlEData(int page,String token){
 
         JSONObject bleString = new JSONObject();
         try {
             bleString.put(PAGE, page);
-            bleString.put(BLE_METER_NUMBER, num);
             bleString.put(BLE_METER_TOKEN, token);
-            Intent BLEIntent = new Intent(GRIDX_BLE_BROADCAST_SEND);
+            Intent BLEIntent = new Intent(GRIDX_BLE_SEND_BROADCAST_TOKEN);
             BLEIntent.putExtra(GRIDX_BLE_BROADCAST, bleString.toString());
             getActivity().sendBroadcast(BLEIntent);
         } catch (JSONException e) {

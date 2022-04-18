@@ -26,12 +26,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST_MANUAL;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST_SEND;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST_TIMER;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_STRING;
+
 import static com.example.gridx03.Sevices.BLEService.PAGE;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_SEND;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_TIMER;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_SEND_BROADCAST_TIMER;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_STRING;
 
 public class FragmentTimer extends Fragment {
     public static final String PAGE = "page";
@@ -46,6 +47,7 @@ public class FragmentTimer extends Fragment {
     private ProgressBar progressBarCircle;
     private TextView textViewTime;
     private ImageView imageViewStartStop;
+    private ImageView imageViewStartStart;
     private NumberPicker numHours;
     private NumberPicker numMinutes;
 
@@ -67,6 +69,7 @@ public class FragmentTimer extends Fragment {
         numHours = (NumberPicker) view.findViewById(R.id.timer_hr_duration_);
         numMinutes = (NumberPicker) view.findViewById(R.id.timer_min_duration);
         imageViewStartStop = (ImageView) view.findViewById(R.id.imageViewStartStop);
+        imageViewStartStart = (ImageView) view.findViewById(R.id.imageViewStartStart);
 
 
         numHours.setMinValue(0);
@@ -74,6 +77,7 @@ public class FragmentTimer extends Fragment {
         numMinutes.setMinValue(0);
         numMinutes.setMaxValue(59);
         initListeners();
+        RegisterReciever();
 
         return view;
     }
@@ -93,80 +97,83 @@ public class FragmentTimer extends Fragment {
         imageViewStartStop.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                MotorVibrate();
-                String duringHours;
-                String duringMinutes;
-                String geyserTimeSetting;
-                if (numHours.getValue() < 10) {
-                    duringHours = String.valueOf("0" + numHours.getValue());
-                } else {
-                    duringHours = String.valueOf(numHours.getValue());
-                }
-
-                if (numMinutes.getValue() < 10) {
-                    duringMinutes = String.valueOf("0" + numMinutes.getValue());
-                } else {
-                    duringMinutes = String.valueOf(numMinutes.getValue());
-                }
-
-
-                if (timerStatus == TimerStatus.STOPPED) {
-                    imageViewStartStop.setImageResource(R.drawable.ic_stop_geyser);
-
-                    RegisterReciever();
-
-                    timeCountInMilliSeconds = (numHours.getValue() * 3600000) + (numMinutes.getValue() * 60000);
-                    progressBarCircle.setMax((int) timeCountInMilliSeconds / 1000);
-                    progressBarCircle.setProgress((int) timeCountInMilliSeconds / 1000);
-
-
-                    JSONObject bleString = new JSONObject();
-                    try {
-                        bleString.put(PAGE, APP_GTIMER_PAGE);
-                        bleString.put(TIME_HOURS, duringHours);
-                        bleString.put(TIME_MINUTES, duringMinutes);
-                        bleString.put(TIME_PLAY_STOP, TIME_PLAY);
-                        Intent BLEIntent = new Intent(GRIDX_BLE_BROADCAST_SEND);
-                        BLEIntent.putExtra(GRIDX_BLE_BROADCAST, bleString.toString());
-                        getActivity().sendBroadcast(BLEIntent);
-
-
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-
-
-                } else {
-
-                    JSONObject bleString = new JSONObject();
-                    try {
-                        bleString.put(PAGE, APP_GTIMER_PAGE);
-                        bleString.put(TIME_HOURS, 0);
-                        bleString.put(TIME_MINUTES, 0);
-                        bleString.put(TIME_PLAY_STOP, TIME_STOP);
-                        Intent BLEIntent = new Intent(GRIDX_BLE_BROADCAST_SEND);
-                        BLEIntent.putExtra(GRIDX_BLE_BROADCAST, bleString.toString());
-                        getActivity().sendBroadcast(BLEIntent);
-                        getActivity().unregisterReceiver(broadcastReceiver);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-                    textViewTime.setText("00:00");
-                    timeCountInMilliSeconds = 1 * 60000;
-                    progressBarCircle.setMax((int) timeCountInMilliSeconds / 1000);
-                    progressBarCircle.setProgress((int) timeCountInMilliSeconds / 1000);
-                    imageViewStartStop.setImageResource(R.drawable.ic_play_geyser_full);
-                    timerStatus = TimerStatus.STOPPED;
-
-                }
+                stopTimer();
+                return false;
+            }
+        });
+        imageViewStartStart.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                stopStart();
                 return false;
             }
         });
 
     }
 
+    private void stopTimer(){
+
+        JSONObject bleString = new JSONObject();
+        try {
+            bleString.put(PAGE, APP_GTIMER_PAGE);
+            bleString.put(TIME_HOURS, 0);
+            bleString.put(TIME_MINUTES, 0);
+            bleString.put(TIME_PLAY_STOP, TIME_STOP);
+            Intent BLEIntent = new Intent(GRIDX_BLE_SEND_BROADCAST_TIMER);
+            BLEIntent.putExtra(GRIDX_BLE_BROADCAST, bleString.toString());
+            getActivity().sendBroadcast(BLEIntent);
+            getActivity().unregisterReceiver(broadcastReceiver);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        textViewTime.setText("00:00");
+        timeCountInMilliSeconds = 1 * 60000;
+        progressBarCircle.setMax((int) timeCountInMilliSeconds / 1000);
+        progressBarCircle.setProgress((int) timeCountInMilliSeconds / 1000);
+
+    }
+
+    private void stopStart(){
+        RegisterReciever();
+        MotorVibrate();
+        String duringHours;
+        String duringMinutes;
+        String geyserTimeSetting;
+        if (numHours.getValue() < 10) {
+            duringHours = String.valueOf("0" + numHours.getValue());
+        } else {
+            duringHours = String.valueOf(numHours.getValue());
+        }
+
+        if (numMinutes.getValue() < 10) {
+            duringMinutes = String.valueOf("0" + numMinutes.getValue());
+        } else {
+            duringMinutes = String.valueOf(numMinutes.getValue());
+        }
+
+            timeCountInMilliSeconds = (numHours.getValue() * 3600000) + (numMinutes.getValue() * 60000);
+            progressBarCircle.setMax((int) timeCountInMilliSeconds / 1000);
+            progressBarCircle.setProgress((int) timeCountInMilliSeconds / 1000);
+
+
+            JSONObject bleString = new JSONObject();
+            try {
+                bleString.put(PAGE, APP_GTIMER_PAGE);
+                bleString.put(TIME_HOURS, duringHours);
+                bleString.put(TIME_MINUTES, duringMinutes);
+                bleString.put(TIME_PLAY_STOP, TIME_PLAY);
+                Intent BLEIntent = new Intent(GRIDX_BLE_SEND_BROADCAST_TIMER);
+                BLEIntent.putExtra(GRIDX_BLE_BROADCAST, bleString.toString());
+                getActivity().sendBroadcast(BLEIntent);
+
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+
+    }
 
     private void MotorVibrate(){
         Vibrator v = (Vibrator)  getActivity().getSystemService(Context.VIBRATOR_SERVICE);
@@ -191,13 +198,6 @@ public class FragmentTimer extends Fragment {
                         int min = jObject.getInt(TIME_MINUTES);
                         int hour = jObject.getInt(TIME_HOURS);
                         int millisUntilFinished = (hour * 3600000) + (min * 60000);
-                        if (min <= 0 && hour <= 0) {
-                            imageViewStartStop.setImageResource(R.drawable.ic_play_geyser_full);
-                            //timerStatus = TimerStatus.STOPPED;
-                        }
-
-                        //timerStatus = TimerStatus.STARTED;
-
                         progressBarCircle.setProgress((int) (millisUntilFinished / 1000));
                         String formattedHours = String.format("%02d", hour);
                         String formattedMin = String.format("%02d", min);

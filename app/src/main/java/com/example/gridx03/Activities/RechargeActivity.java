@@ -8,6 +8,7 @@ import com.example.gridx03.Fragments.FragmentManual;
 import com.example.gridx03.Fragments.FragmentSchedule;
 import com.example.gridx03.Fragments.FragmentSendToken;
 import com.example.gridx03.Fragments.FragmentTimer;
+import com.example.gridx03.Fragments.FragmentTokenHistory;
 import com.example.gridx03.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -41,6 +42,9 @@ public class RechargeActivity extends AppCompatActivity {
 
                         case R.id.nav_recharge_send:
                             selectedFragment = new FragmentSendToken();
+                            break;
+                        case R.id.nav_recharge_hostory:
+                            selectedFragment = new FragmentTokenHistory();
                             break;
 
                     }

@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.os.Vibrator;
+import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.example.gridx03.Activities.GeyserNavigationActivity;
 import com.example.gridx03.R;
@@ -24,20 +26,28 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST_HOME;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST_MANUAL;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_BROADCAST_SEND;
-import static com.example.gridx03.Sevices.BLEService.GRIDX_BLE_STRING;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_HOME;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_MANUAL;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_BROADCAST_SEND;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_SEND_BROADCAST_HOME;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_SEND_BROADCAST_MANUAL;
+import static com.example.gridx03.utils.BLE_Costants.GRIDX_BLE_STRING;
 import static com.example.gridx03.Sevices.BLEService.PAGE;
 
 public class FragmentManual  extends Fragment {
-    public static final String BLE_GEYSER_MODE_MANUAL = "g_mode_manual";
+    public static final String BLE_GEYSER_MODE_MANUAL = "g_state";
     public static final String GEYSER_STATE = "g_state";
     int statevalue =0;
 
-    private ImageView GeyserButton;
-    private ProgressBar ProgressBarMeterState;
+
+
+    private ImageView GeyserButtonON;
+    private ProgressBar ProgressBarMeterStateON;
+
+
+    private ImageView GeyserButtonOFF;
+    private ProgressBar ProgressBarMeterStateOFF;
     private enum TimerStatus {
         STARTED,
         STOPPED
@@ -47,34 +57,44 @@ public class FragmentManual  extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_manual_mode, container, false);
-        GeyserButton = view.findViewById(R.id.image_geys_on);
-        ProgressBarMeterState = view.findViewById(R.id.progress_manual_main);
-        ProgressBarMeterState.setVisibility(View.INVISIBLE);
-        ProgressBarMeterState.setIndeterminate(true);
-        GeyserButton.setOnLongClickListener(new View.OnLongClickListener() {
+        GeyserButtonON = view.findViewById(R.id.image_geys_on);
+        GeyserButtonOFF = view.findViewById(R.id.image_geys_off);
+        ProgressBarMeterStateON = view.findViewById(R.id.progress_manual_main_on);
+        ProgressBarMeterStateOFF = view.findViewById(R.id.progress_manual_main_off);
+        ProgressBarMeterStateON.setVisibility(View.INVISIBLE);
+        ProgressBarMeterStateON.setIndeterminate(true);
+        ProgressBarMeterStateOFF.setVisibility(View.INVISIBLE);
+        ProgressBarMeterStateOFF.setIndeterminate(true);
+        GeyserButtonOFF.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getActivity(), "long press to turn off water heater", Toast.LENGTH_SHORT).show();
+            }
+        });
+        GeyserButtonON.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Toast.makeText(getActivity(), "long press to turn off water heater", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        GeyserButtonON.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                ProgressBarMeterStateON.setVisibility(View.VISIBLE);
+                MotorVibrate();
+                sendBlEData(1);
+
                 return false;
             }
         });
 
-        GeyserButton.setOnLongClickListener(new View.OnLongClickListener() {
+        GeyserButtonOFF.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                ProgressBarMeterState.setVisibility(View.VISIBLE);
+                ProgressBarMeterStateOFF.setVisibility(View.VISIBLE);
                 MotorVibrate();
-               // GeyserButton.setVisibility(View.INVISIBLE);
-
-                if (timerStatus ==TimerStatus.STOPPED) {
-
-                    sendBlEData(1);
-                    statevalue = 1;
-
-                }
-                else {
-                    sendBlEData(0);
-                    statevalue = 0;
-                }
+                sendBlEData(0);
                 return false;
             }
         });
@@ -84,11 +104,13 @@ public class FragmentManual  extends Fragment {
 
     private void sendBlEData(int state){
         String page = "1";
+        statevalue =state;
         JSONObject bleString = new JSONObject();
         try {
             bleString.put(PAGE, page);
             bleString.put(BLE_GEYSER_MODE_MANUAL, state);
-            Intent BLEIntent = new Intent(GRIDX_BLE_BROADCAST_SEND);
+            Intent BLEIntent = new Intent(GRIDX_BLE_SEND_BROADCAST_MANUAL);
+
             BLEIntent.putExtra(GRIDX_BLE_BROADCAST, bleString.toString());
             getActivity().sendBroadcast(BLEIntent);
         } catch (JSONException e) {
@@ -119,17 +141,8 @@ public class FragmentManual  extends Fragment {
                         jObject = new JSONObject(BleData);
                         int unitsInt = jObject.getInt(GEYSER_STATE);
                         if(unitsInt ==1){
-                            ProgressBarMeterState.setVisibility(View.INVISIBLE);
-                            if (timerStatus ==TimerStatus.STOPPED) {
-                                timerStatus= TimerStatus.STARTED;
-                                GeyserButton.setImageResource(R.drawable.map_icon_red);
-                            }
-                            else {
-                                timerStatus= TimerStatus.STOPPED;
-                                GeyserButton.setImageResource(R.drawable.map_icon_green);
-
-                            }
-
+                            ProgressBarMeterStateOFF.setVisibility(View.INVISIBLE);
+                            ProgressBarMeterStateON.setVisibility(View.INVISIBLE);
 
                             //GeyserButton.setVisibility(View.VISIBLE);
                         }else {

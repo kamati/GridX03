@@ -146,6 +146,7 @@
 
     <string name="token_number">Token Number</string>
     <string name="header_send_token">Send Token</string>
+    <string name="token_hostrory">Token History</string>
     <string name="buy_token">Buy Token</string>
     <string name="STS_test_settings">STS Test Settings</string>
 
@@ -166,6 +167,11 @@
     <string name="sts_CTSF_UUT01">CTSF:UUT01</string>
     <string name="sts_CTSF_UUT02">CTSF:UUT02</string>
     <string name="sts_CTSF_UUT03">CTSF:UUT03</string>
+
+    <string name="start_time">Start Time</string>
+    <string name="end_time">End Time</string>
+    <string name="send_setting">Send Settings</string>
+
 
 
     <!--
